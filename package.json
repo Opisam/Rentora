@@ -1,0 +1,13 @@
+{
+  "name": "rental-platform",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "npm --prefix backend test && npm --prefix frontend test",
+    "test:backend": "npm --prefix backend test",
+    "test:frontend": "npm --prefix frontend test",
+    "e2e": "npm --prefix frontend run e2e",
+    "load:smoke": "npm --prefix backend run load:smoke",
+    "load:k6": "npm --prefix backend run load:k6"
+  }
+}

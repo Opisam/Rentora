@@ -1,0 +1,84 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgress123
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Backend — install & test
+        working-directory: backend
+        run: |
+          # .env.test is gitignored on purpose; regenerate it for CI.
+          # Values match the postgres service container above.
+          cat > .env.test <<'EOF'
+          DB_NAME=rental_platform_test
+          DB_USER=postgres
+          DB_PASSWORD=postgress123
+          DB_HOST=localhost
+          JWT_SECRET=ci-only-secret-not-used-in-prod
+          PORT=0
+          RATE_LIMIT_GLOBAL_MAX=10000
+          RATE_LIMIT_AUTH_MAX=10000
+          UPLOAD_DIR=uploads-test
+          EOF
+          npm ci
+          npm run db:create:test
+          npm test
+
+      - name: Frontend — install, unit tests, production build
+        working-directory: frontend
+        env:
+          VITE_API_URL: https://placeholder.invalid
+        run: |
+          npm ci
+          npm test
+          npm run build   # prove the prod bundle compiles before shipping it
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render API deploy (rentora-api)
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK" >/dev/null
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+      - name: Trigger Render frontend deploy (rentora-web)
+        run: curl -fsS -X POST "$RENDER_STATIC_DEPLOY_HOOK" >/dev/null
+        env:
+          RENDER_STATIC_DEPLOY_HOOK: ${{ secrets.RENDER_STATIC_DEPLOY_HOOK }}
+
+      - name: Verify API is healthy in production
+        run: |
+          echo "Polling $PROD_API_URL/health ..."
+          for i in $(seq 1 60); do
+            if curl -fsS "$PROD_API_URL/health" 2>/dev/null | grep -q '"ok"'; then
+              echo "API is healthy after ~$((i * 10))s"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::API did not become healthy within 10 minutes"
+          exit 1
+        env:
+          PROD_API_URL: ${{ secrets.PROD_API_URL }}
