@@ -1,5 +1,12 @@
 import pg from 'pg';
-import 'dotenv/config';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+// load the TEST env explicitly — plain 'dotenv/config' reads .env, which does
+// not exist on CI runners (it is gitignored), leaving DB_PASSWORD undefined
+const here = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(here, '..', '.env.test') });
 
 const { Client } = pg;
 
