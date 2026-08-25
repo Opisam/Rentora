@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -39,9 +40,9 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="*" element={<Login />} />
           <Route path="/dashboard" element={<Page allowedRoles={['landlord', 'tenant']} element={<Dashboard />} />} />
           <Route path="/properties" element={<Page allowedRoles={['landlord']} element={<Properties />} />} />
           <Route path="/browse" element={<Page allowedRoles={['tenant']} element={<BrowseUnits />} />} />
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/maintenance-board" element={<Page allowedRoles={['landlord']} element={<MaintenanceBoard />} />} />
           <Route path="/properties/:propertyId/expenses" element={<Page allowedRoles={['landlord']} element={<Expenses />} />} />
           <Route path="/reports" element={<Page allowedRoles={['landlord']} element={<Reports />} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

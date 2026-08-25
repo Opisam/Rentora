@@ -59,6 +59,36 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
+      - name: Preflight — verify Render secrets exist
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          RENDER_STATIC_DEPLOY_HOOK: ${{ secrets.RENDER_STATIC_DEPLOY_HOOK }}
+          PROD_API_URL: ${{ secrets.PROD_API_URL }}
+        run: |
+          missing=0
+          for var in RENDER_DEPLOY_HOOK RENDER_STATIC_DEPLOY_HOOK PROD_API_URL; do
+            if [ -z "${!var}" ]; then
+              echo "::error::GitHub secret '${var}' is not set"
+              missing=1
+            fi
+          done
+          if [ "$missing" -eq 1 ]; then
+            echo ""
+            echo "Deployment did NOT run — hosting is not wired up yet."
+            echo "Finish setup once, then every push to main deploys automatically:"
+            echo "  1. Create an account at https://render.com"
+            echo "  2. Dashboard → New → Blueprint → pick this repo (render.yaml provisions everything)"
+            echo "     - CORS_ORIGIN  → https://<your-static-site>.onrender.com"
+            echo "     - VITE_API_URL → https://<your-api>.onrender.com"
+            echo "  3. GitHub → Settings → Secrets and variables → Actions → add:"
+            echo "       RENDER_DEPLOY_HOOK        (api service → Settings → Deploy Hook)"
+            echo "       RENDER_STATIC_DEPLOY_HOOK (web service → Settings → Deploy Hook)"
+            echo "       PROD_API_URL              (https://<your-api>.onrender.com)"
+            echo "  4. Re-run this workflow (Actions → Deploy → Re-run jobs)"
+            echo "Full walkthrough: DEPLOY.md"
+            exit 1
+          fi
+
       - name: Trigger Render API deploy (rentora-api)
         run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK" >/dev/null
         env:
