@@ -80,6 +80,20 @@ jobs:
       - name: Create dev database
         run: |
           PGPASSWORD=postgress123 psql -h localhost -U postgres -c "CREATE DATABASE rental_platform_dev;"
+      - name: Write backend .env for E2E
+        working-directory: backend
+        run: |
+          cat > .env <<'EOF'
+          DB_NAME=rental_platform_dev
+          DB_USER=postgres
+          DB_PASSWORD=postgress123
+          DB_HOST=localhost
+          JWT_SECRET=ci-e2e-secret-not-used-in-prod
+          PORT=5000
+          CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
+          RATE_LIMIT_GLOBAL_MAX=100000
+          RATE_LIMIT_AUTH_MAX=50
+          EOF
       - name: Install backend deps
         run: npm ci
         working-directory: backend
