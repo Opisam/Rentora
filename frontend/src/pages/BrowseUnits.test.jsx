@@ -46,7 +46,7 @@ describe('BrowseUnits', () => {
 
     expect(await screen.findByText('Lakeside Apartments')).toBeInTheDocument();
     expect(screen.getByText('Maple Court')).toBeInTheDocument();
-    expect(screen.getByText('$1,300')).toBeInTheDocument();
+    expect(screen.getByText('UGX 1,300')).toBeInTheDocument();
     expect(screen.getByText(/8 Lakeview Drive/)).toBeInTheDocument();
     expect(screen.getByText(/2 vacant units ready to rent/)).toBeInTheDocument();
   });

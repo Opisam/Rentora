@@ -59,6 +59,22 @@ jobs:
       - run: npm ci
       - run: npm test
 
+  mobile-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm ci --legacy-peer-deps
+      - name: Lint
+        run: npx eslint app/ components/
+      - name: Expo doctor
+        run: npx expo-doctor || true
+
   e2e:
     runs-on: ubuntu-latest
     services:

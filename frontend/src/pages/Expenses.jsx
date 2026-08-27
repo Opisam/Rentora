@@ -18,7 +18,10 @@ export default function Expenses() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    await createExpense(propertyId, form);
+    await createExpense(propertyId, {
+      ...form,
+      amount: parseFloat(String(form.amount).replace(/,/g, '')) || 0,
+    });
     setForm({ category: 'repairs', amount: '', description: '', date: '' });
     load();
   }
@@ -57,7 +60,7 @@ export default function Expenses() {
               </select>
             </div>
             <div className="col-md-2 col-6">
-              <label htmlFor="expAmount" className="form-label small fw-semibold">Amount ($)</label>
+              <label htmlFor="expAmount" className="form-label small fw-semibold">Amount (UGX)</label>
               <input id="expAmount" type="number" min="0" step="0.01" className="form-control" placeholder="0.00" required
                 value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
             </div>
@@ -83,7 +86,7 @@ export default function Expenses() {
       <div className="card">
         <div className="card-body d-flex align-items-center justify-content-between py-3 border-bottom flex-wrap gap-2">
           <span className="fw-semibold">Total expenses</span>
-          <span className="h5 text-danger fw-bold mb-0">${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="h5 text-danger fw-bold mb-0">UGX {total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
 
         {expenses.length === 0 ? (
@@ -109,7 +112,7 @@ export default function Expenses() {
                     <td>{exp.date}</td>
                     <td><span className="badge bg-light text-dark border">{String(exp.category).replace('_', ' ')}</span></td>
                     <td className="text-muted">{exp.description || '—'}</td>
-                    <td className="text-end fw-semibold">${Number(exp.amount).toLocaleString()}</td>
+                    <td className="text-end fw-semibold">UGX {Number(exp.amount).toLocaleString()}</td>
                     <td className="text-end">
                       <button className="btn btn-sm btn-outline-danger"
                         onClick={() => handleDelete(exp.id)} aria-label={`Delete expense from ${exp.date}`}>

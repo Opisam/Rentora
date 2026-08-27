@@ -9,7 +9,7 @@ async function start() {
     console.log('Database connected');
     await sequelize.sync();
     console.log('Models synced');
-    app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
+    app.listen(PORT, '0.0.0.0', () => console.log(`Backend running on http://0.0.0.0:${PORT}`));
     startRentJob();
   } catch (err) {
     console.error('Failed to start server:', err);

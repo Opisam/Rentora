@@ -47,11 +47,11 @@ export default function RentDashboard() {
         </div></div></div>
         <div className="col"><div className="card card-hover h-100"><div className="card-body py-3">
           <div className="stat-label">Collected</div>
-          <div className="stat-value text-success">${collected.toLocaleString()}</div>
+          <div className="stat-value text-success">UGX {collected.toLocaleString()}</div>
         </div></div></div>
         <div className="col"><div className="card card-hover h-100"><div className="card-body py-3">
           <div className="stat-label">Outstanding</div>
-          <div className="stat-value text-danger">${outstanding.toLocaleString()}</div>
+          <div className="stat-value text-danger">UGX {outstanding.toLocaleString()}</div>
         </div></div></div>
         <div className="col"><div className="card card-hover h-100"><div className="card-body py-3">
           <div className="stat-label">Unpaid count</div>
@@ -86,7 +86,7 @@ export default function RentDashboard() {
                     <td>#{p.lease.unit.unitNumber}</td>
                     <td>{p.lease.tenant?.name || '—'}</td>
                     <td>{p.dueDate}</td>
-                    <td>${Number(p.amountDue).toLocaleString()}</td>
+                    <td>UGX {Number(p.amountDue).toLocaleString()}</td>
                     <td><StatusBadge value={p.status} /></td>
                     <td className="text-end">
                       {p.status !== 'paid' && (

@@ -14,8 +14,9 @@ describe('POST /auth/register', () => {
   it('registers a new user (201)', async () => {
     const res = await request(app).post('/auth/register').send(validBody);
     expect(res.status).toBe(201);
-    expect(res.body).toMatchObject({ name: 'New Tenant', email: 'new@test.com', role: 'tenant' });
-    expect(res.body.password).toBeUndefined();
+    expect(typeof res.body.token).toBe('string');
+    expect(res.body.user).toMatchObject({ name: 'New Tenant', email: 'new@test.com', role: 'tenant' });
+    expect(res.body.user.password).toBeUndefined();
   });
 
   it('rejects duplicate email (409)', async () => {

@@ -41,7 +41,7 @@ export default function RentHistory() {
                     <td className="fw-semibold">{p.lease.unit.property.name}</td>
                     <td>#{p.lease.unit.unitNumber}</td>
                     <td>{p.dueDate}</td>
-                    <td>${Number(p.amountDue).toLocaleString()}</td>
+                    <td>UGX {Number(p.amountDue).toLocaleString()}</td>
                     <td><StatusBadge value={p.status} /></td>
                     <td className="text-muted">{p.paidDate || '—'}</td>
                   </tr>

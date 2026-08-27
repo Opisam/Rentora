@@ -10,8 +10,12 @@ import { validate } from '../middleware/validate.middleware.js';
 
 const router = express.Router();
 
-// public/tenant browsing
+// public/tenant browsing — static routes first to avoid :id conflicts
 router.get('/units/vacant', getVacantUnits);
+
+// landlord-only unit management, nested under a property
+router.put('/units/:id', requireAuth, requireRole('landlord'), unitValidation, validate, updateUnit);
+router.delete('/units/:id', requireAuth, requireRole('landlord'), deleteUnit);
 
 // landlord-only property management
 router.post('/', requireAuth, requireRole('landlord'), propertyValidation, validate, createProperty);
@@ -20,9 +24,7 @@ router.get('/:id', requireAuth, requireRole('landlord'), getPropertyById);
 router.put('/:id', requireAuth, requireRole('landlord'), propertyValidation, validate, updateProperty);
 router.delete('/:id', requireAuth, requireRole('landlord'), deleteProperty);
 
-// landlord-only unit management, nested under a property
+// landlord-only unit creation (must come after /:id to avoid conflict)
 router.post('/:propertyId/units', requireAuth, requireRole('landlord'), unitValidation, validate, createUnit);
-router.put('/units/:id', requireAuth, requireRole('landlord'), unitValidation, validate, updateUnit);
-router.delete('/units/:id', requireAuth, requireRole('landlord'), deleteUnit);
 
 export default router;

@@ -6,6 +6,7 @@
     "test": "npm --prefix backend test && npm --prefix frontend test",
     "test:backend": "npm --prefix backend test",
     "test:frontend": "npm --prefix frontend test",
+    "test:mobile": "npm --prefix mobile test",
     "e2e": "npm --prefix frontend run e2e",
     "load:smoke": "npm --prefix backend run load:smoke",
     "load:k6": "npm --prefix backend run load:k6"

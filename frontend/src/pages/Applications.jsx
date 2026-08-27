@@ -35,7 +35,7 @@ export default function Applications() {
         applicationId,
         startDate: form.startDate,
         endDate: form.endDate,
-        monthlyRent: form.monthlyRent,
+        monthlyRent: parseFloat(String(form.monthlyRent).replace(/,/g, '')) || 0,
       });
       load();
     } catch (err) {
@@ -127,7 +127,7 @@ export default function Applications() {
                         onChange={e => updateLeaseForm(app.id, 'endDate', e.target.value)} />
                     </div>
                     <div className="col-md-3 col-6">
-                      <label className="form-label small text-muted">Monthly rent ($)</label>
+                      <label className="form-label small text-muted">Monthly rent (UGX)</label>
                       <input type="number" min="0" className="form-control form-control-sm" placeholder="1200" required
                         value={leaseForm[app.id]?.monthlyRent || ''}
                         onChange={e => updateLeaseForm(app.id, 'monthlyRent', e.target.value)} />

@@ -56,7 +56,7 @@ export default function MyLease() {
             <div className="card-body p-3 p-md-4">
               <div className="d-flex flex-wrap gap-4 mb-3 small text-muted">
                 <span><i className="bi bi-calendar3 me-1" />{lease.startDate} → {lease.endDate}</span>
-                <span><i className="bi bi-cash me-1" /><strong>${Number(lease.monthlyRent).toLocaleString()}</strong>/mo</span>
+                <span><i className="bi bi-cash me-1" /><strong>UGX {Number(lease.monthlyRent).toLocaleString()}</strong>/mo</span>
               </div>
 
               <h3 className="small fw-semibold text-muted text-uppercase mb-2">Documents</h3>

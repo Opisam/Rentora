@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getMyProperties, createProperty, createUnit } from '../api/properties';
+import { getMyProperties, createProperty, createUnit, updateUnit, deleteUnit } from '../api/properties';
 import PageHeader from '../components/PageHeader';
 import StatusBadge from '../components/StatusBadge';
 
-const EMPTY_UNIT = { unitNumber: '', bedrooms: 1, bathrooms: 1, rentAmount: '' };
+const EMPTY_UNIT = { unitNumber: '', bedrooms: 1, bathrooms: 1, rentAmount: '', status: 'vacant' };
 
 export default function Properties() {
   const [properties, setProperties] = useState([]);
   const [form, setForm] = useState({ name: '', address: '', city: '' });
   const [unitForms, setUnitForms] = useState({});
+  const [editingUnit, setEditingUnit] = useState(null);
+  const [editForm, setEditForm] = useState({});
   const [error, setError] = useState('');
 
   const loadProperties = useCallback(() => {
@@ -32,7 +34,12 @@ export default function Properties() {
 
   async function handleAddUnit(propertyId) {
     const unitForm = unitForms[propertyId] || EMPTY_UNIT;
-    await createUnit(propertyId, unitForm);
+    await createUnit(propertyId, {
+      ...unitForm,
+      bedrooms: parseInt(unitForm.bedrooms) || 1,
+      bathrooms: parseInt(unitForm.bathrooms) || 1,
+      rentAmount: parseFloat(String(unitForm.rentAmount).replace(/,/g, '')) || 0,
+    });
     setUnitForms({ ...unitForms, [propertyId]: { ...EMPTY_UNIT } });
     loadProperties();
   }
@@ -42,6 +49,38 @@ export default function Properties() {
       ...unitForms,
       [propertyId]: { ...(unitForms[propertyId] || {}), [field]: value },
     });
+  }
+
+  function startEditUnit(unit) {
+    setEditingUnit(unit.id);
+    setEditForm({
+      unitNumber: unit.unitNumber,
+      bedrooms: unit.bedrooms,
+      bathrooms: unit.bathrooms,
+      rentAmount: unit.rentAmount,
+      status: unit.status,
+    });
+  }
+
+  async function handleSaveEdit(unitId) {
+    try {
+      await updateUnit(unitId, {
+        ...editForm,
+        bedrooms: parseInt(editForm.bedrooms) || 1,
+        bathrooms: parseInt(editForm.bathrooms) || 1,
+        rentAmount: parseFloat(String(editForm.rentAmount).replace(/,/g, '')) || 0,
+      });
+      setEditingUnit(null);
+      loadProperties();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to update unit');
+    }
+  }
+
+  async function handleDeleteUnit(unitId) {
+    if (!confirm('Delete this unit?')) return;
+    await deleteUnit(unitId);
+    loadProperties();
   }
 
   return (
@@ -123,16 +162,55 @@ export default function Properties() {
                         <th>Bathrooms</th>
                         <th>Rent / mo</th>
                         <th>Status</th>
+                        <th className="text-end">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {property.units.map(unit => (
                         <tr key={unit.id}>
-                          <td className="fw-semibold">#{unit.unitNumber}</td>
-                          <td>{unit.bedrooms}</td>
-                          <td>{unit.bathrooms}</td>
-                          <td>${Number(unit.rentAmount).toLocaleString()}</td>
-                          <td><StatusBadge value={unit.status} /></td>
+                          {editingUnit === unit.id ? (
+                            <>
+                              <td><input className="form-control form-control-sm" value={editForm.unitNumber}
+                                onChange={e => setEditForm({ ...editForm, unitNumber: e.target.value })} /></td>
+                              <td><input type="number" min="0" className="form-control form-control-sm" value={editForm.bedrooms}
+                                onChange={e => setEditForm({ ...editForm, bedrooms: e.target.value })} /></td>
+                              <td><input type="number" min="0" className="form-control form-control-sm" value={editForm.bathrooms}
+                                onChange={e => setEditForm({ ...editForm, bathrooms: e.target.value })} /></td>
+                              <td><input type="number" min="0" className="form-control form-control-sm" value={editForm.rentAmount}
+                                onChange={e => setEditForm({ ...editForm, rentAmount: e.target.value })} /></td>
+                              <td>
+                                <select className="form-select form-select-sm" value={editForm.status}
+                                  onChange={e => setEditForm({ ...editForm, status: e.target.value })}>
+                                  <option value="vacant">Vacant</option>
+                                  <option value="occupied">Occupied</option>
+                                </select>
+                              </td>
+                              <td className="text-end">
+                                <button className="btn btn-sm btn-success me-1" onClick={() => handleSaveEdit(unit.id)}>
+                                  <i className="bi bi-check-lg" />
+                                </button>
+                                <button className="btn btn-sm btn-outline-secondary" onClick={() => setEditingUnit(null)}>
+                                  <i className="bi bi-x-lg" />
+                                </button>
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="fw-semibold">#{unit.unitNumber}</td>
+                              <td>{unit.bedrooms}</td>
+                              <td>{unit.bathrooms}</td>
+                              <td>UGX {Number(unit.rentAmount).toLocaleString()}</td>
+                              <td><StatusBadge value={unit.status} /></td>
+                              <td className="text-end">
+                                <button className="btn btn-sm btn-outline-primary me-1" onClick={() => startEditUnit(unit)}>
+                                  <i className="bi bi-pencil" />
+                                </button>
+                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteUnit(unit.id)}>
+                                  <i className="bi bi-trash" />
+                                </button>
+                              </td>
+                            </>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -150,21 +228,29 @@ export default function Properties() {
                     onChange={e => updateUnitForm(property.id, 'unitNumber', e.target.value)} />
                 </div>
                 <div className="col-6 col-md-2">
-                  <input type="number" min="1" className="form-control form-control-sm" placeholder="Beds"
+                  <input type="number" min="0" className="form-control form-control-sm" placeholder="Beds"
                     value={unitForms[property.id]?.bedrooms ?? ''}
                     onChange={e => updateUnitForm(property.id, 'bedrooms', e.target.value)} />
                 </div>
                 <div className="col-6 col-md-2">
-                  <input type="number" min="1" step="0.5" className="form-control form-control-sm" placeholder="Baths"
+                  <input type="number" min="0" step="0.5" className="form-control form-control-sm" placeholder="Baths"
                     value={unitForms[property.id]?.bathrooms ?? ''}
                     onChange={e => updateUnitForm(property.id, 'bathrooms', e.target.value)} />
                 </div>
-                <div className="col-6 col-md-3">
-                  <input type="number" min="0" className="form-control form-control-sm" placeholder="Rent ($/mo)"
+                <div className="col-6 col-md-2">
+                  <input type="number" min="0" className="form-control form-control-sm" placeholder="Rent (UGX/mo)"
                     value={unitForms[property.id]?.rentAmount || ''}
                     onChange={e => updateUnitForm(property.id, 'rentAmount', e.target.value)} />
                 </div>
-                <div className="col-md-3">
+                <div className="col-6 col-md-2">
+                  <select className="form-select form-select-sm"
+                    value={unitForms[property.id]?.status || 'vacant'}
+                    onChange={e => updateUnitForm(property.id, 'status', e.target.value)}>
+                    <option value="vacant">Vacant</option>
+                    <option value="occupied">Occupied</option>
+                  </select>
+                </div>
+                <div className="col-md-2">
                   <button type="submit" className="btn btn-sm btn-primary w-100">
                     <i className="bi bi-door-open me-1" />Add Unit
                   </button>

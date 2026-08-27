@@ -12,8 +12,8 @@ export async function createUnit(req, res) {
   const check = await assertOwnsProperty(propertyId, req.user.id);
   if (check.error) return res.status(check.status).json({ error: check.error });
 
-  const { unitNumber, bedrooms, bathrooms, rentAmount } = req.body;
-  const unit = await Unit.create({ unitNumber, bedrooms, bathrooms, rentAmount, propertyId });
+  const { unitNumber, bedrooms, bathrooms, rentAmount, status } = req.body;
+  const unit = await Unit.create({ unitNumber, bedrooms, bathrooms, rentAmount, status, propertyId });
   res.status(201).json(unit);
 }
 
@@ -22,7 +22,8 @@ export async function updateUnit(req, res) {
   if (!unit) return res.status(404).json({ error: 'Unit not found' });
   if (unit.property.landlordId !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
 
-  await unit.update(req.body);
+  const { unitNumber, bedrooms, bathrooms, rentAmount, status } = req.body;
+  await unit.update({ unitNumber, bedrooms, bathrooms, rentAmount, status });
   res.json(unit);
 }
 
