@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { AuthProvider, useAuth } from './AuthContext';
 
 vi.mock('../api/axios', () => ({
-  default: { post: vi.fn() },
+  default: { post: vi.fn(), get: vi.fn().mockResolvedValue({}) },
 }));
 
 import api from '../api/axios';

@@ -56,7 +56,7 @@ describe('BrowseUnits', () => {
 
     render(<BrowseUnits />);
 
-    expect(await screen.findByText(/No vacant units right now/i)).toBeInTheDocument();
+    expect(await screen.findByText(/No vacant units match your filters/i)).toBeInTheDocument();
     expect(screen.queryByText('Apply for this unit')).not.toBeInTheDocument();
   });
 

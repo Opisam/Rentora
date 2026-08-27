@@ -11,10 +11,12 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!user) return;
-    api.get('/properties').catch(() => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setUser(null);
+    api.get('/properties').catch((err) => {
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+      }
     });
   }, []);
 
